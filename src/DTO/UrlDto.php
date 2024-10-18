@@ -9,7 +9,7 @@ class UrlDto implements JsonSerializable
 private int $id;
 private string $originalUrl;
 private string $shortedUrl;
-private \DateTime $createdAt;
+private \DateTimeImmutable $createdAt;
 
     public function getId(): int
     {
@@ -41,12 +41,12 @@ private \DateTime $createdAt;
         $this->shortedUrl = $shortedUrl;
     }
 
-    public function getCreatedAt(): \DateTime
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): void
+    public function setCreatedAt(\DateTimeImmutable $createdAt): void
     {
         $this->createdAt = $createdAt;
     }
