@@ -6,6 +6,12 @@ use App\Dto\UrlDto;
 use App\Entity\Url;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Endroid\QrCode\Color\Color;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\Label\Label;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 
 class Services
 {
@@ -52,14 +58,19 @@ class Services
     }
     function AddNewUrl(UrlDto $dto, EntityManagerInterface $entityManager):Url
     {
-        $code= $this->generarCodigo(5);
-        $insertData= new Url();
-        $insertData->setOriginalUrl($dto->getOriginalUrl());
-        $insertData->setShortedUrl('localhost:8000/cutUrl/'.$code);
-        $insertData->setCreatedAt(new DateTimeImmutable());
-        $entityManager->persist($insertData);
-        $entityManager->flush();
-        return $insertData;
+        $isChecked=$this->checkUrl($dto->getOriginalUrl(),$entityManager);
+        if ($isChecked) {
+            return $isChecked;
+        }else{
+            $code= $this->generarCodigo(5);
+            $insertData= new Url();
+            $insertData->setOriginalUrl($dto->getOriginalUrl());
+            $insertData->setShortedUrl('localhost:8000/cutUrl/'.$code);
+            $insertData->setCreatedAt(new DateTimeImmutable());
+            $entityManager->persist($insertData);
+            $entityManager->flush();
+            return $insertData;
+        }
     }
     function checkUrl(string $url,EntityManagerInterface $entityManager):bool|url
     {
@@ -68,5 +79,19 @@ class Services
             return $findUrl;
         }
         return false;
+    }
+    function GenerateQR(string $x)
+    {
+        $writer=new PngWriter();
+        $qr = new QrCode(
+            data: $x,
+            encoding: new Encoding('UTF-8'),
+            errorCorrectionLevel: ErrorCorrectionLevel::Low,
+            size: 300,
+            margin: 10
+        );
+        $result = $writer->write($qr);
+        $writer->validateResult($result,$x);
+        return $result;
     }
 }
